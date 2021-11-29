@@ -101,7 +101,7 @@ const startConnection = () => {
                   console.log("Initial balance is too low", tx.value.div(WEI).toString())
                 }
                 const decodedInput = pcsAbi.parseTransaction({ data: tx.data, value: tx.value, });
-                if (ethers.utils.getAddress(tokens.pair[1]) === decodedInput.args[0]) {
+                if (ethers.utils.getAddress(tokens.pair[1]) !== decodedInput.args[0]) {
                   provider.off("pending");
                   await Wait(tokens.buyDelay);
                   await BuyToken(tx);
@@ -114,7 +114,7 @@ const startConnection = () => {
                 const decodedInput = pcsAbi.parseTransaction({ data: tx.data, value: tx.value, });
                 let token0 = decodedInput.args.tokenA;
                 let token1 = decodedInput.args.tokenB;
-                if (token0 == tokens.pair[1] || token1 == tokens.pair[1]) {
+                if (token0 !== tokens.pair[1] || token1 !== tokens.pair[1]) {
                   let path = [token0, token1];
                   path = path[1] == tokens.pair[1] ? path : path.reverse();
                   path.unshift(tokens.pair[0]);
@@ -150,7 +150,6 @@ const startConnection = () => {
 };
 
 const BuyToken = async (txLP, path) => {
-  return
   const tx = await retry(
     async () => {
       const amountOutMin = 0;
@@ -160,9 +159,9 @@ const BuyToken = async (txLP, path) => {
         process.env.RECIPIENT,
         Date.now() + 1000 * tokens.deadline,
         {
-          value: tokens.purchaseAmount,
-          gasLimit: tokens.gasLimit,
-          gasPrice: ethers.utils.parseUnits(tokens.gasPrice, "gwei"),
+          value: ethers.utils.parseEther(tokens.purchaseAmount),
+          gasLimit: tokens.GASLIMIT,
+          gasPrice: ethers.utils.parseUnits(tokens.GASPRICE, "gwei"),
         }
       );
       return buyConfirmation;
